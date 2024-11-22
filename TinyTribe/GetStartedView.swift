@@ -11,58 +11,57 @@ import SwiftUI
 import SwiftUI
 
 struct GetStartedView: View {
+    @EnvironmentObject var sessionManager: SessionManager
+
     var body: some View {
-        VStack {
-            Spacer()
-            
-            // App Logo or Icon
-            Image(systemName: "person.3.fill") // Replace with actual app logo if available
-                .resizable()
-                .scaledToFit()
-                .frame(width: 100, height: 100)
-                .foregroundColor(ColorPalette.rustyRed)
-                .padding(.bottom, 40)
-            
-            // Title
-            Text("Welcome to TinyTribe")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(ColorPalette.charcoalGray)
-            
-            // Subtitle
-            Text("Babysit each other's children and build a stronger community.")
-                .font(.headline)
-                .foregroundColor(ColorPalette.warmTaupe)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-                .padding(.top, 8)
-            
-            Spacer()
-            
-            // Get Started Button
-            Button(action: {
-                // Handle button action
-            }) {
-                Text("Get Started")
+        NavigationView {
+            VStack {
+                Spacer()
+                
+                Image("baby-boy")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 100, height: 100)
+                    .padding(.bottom, 40)
+                
+                Text("Welkom bij TinyTribe")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(ColorPalette.charcoalGray)
+                
+                Text("Om het allemaal wat makkelijker te maken")
                     .font(.headline)
-                    .foregroundColor(ColorPalette.softCream)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(ColorPalette.rustyRed)
-                    .cornerRadius(10)
+                    .foregroundColor(ColorPalette.stoneGray)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                    .padding(.top, 4)
+                
+                Spacer()
+                
+                // Get Started Button with Navigation
+                NavigationLink(destination: RegisterView()) {
+                    Text("Start")
+                        .font(.headline)
+                        .foregroundColor(ColorPalette.almostWhite)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(ColorPalette.rustyRed)
+                        .cornerRadius(10)
+                }
+                .padding(.horizontal, 40)
+                
+                NavigationLink(destination: LoginView()) {
+                    Text("Heb je al een account? Inloggen")
+                        .font(.subheadline)
+                        .foregroundColor(ColorPalette.midnightBlue)
+                        .padding(.top, 20)
+                }
+                
+                Spacer()
             }
-            .padding(.horizontal, 40)
-            
-            // Additional Text
-            Text("Already have an account? Log in")
-                .font(.subheadline)
-                .foregroundColor(ColorPalette.powderBlue)
-                .padding(.top, 20)
-            
-            Spacer()
+            .background(ColorPalette.sand)
+            .edgesIgnoringSafeArea(.all)
         }
-        .background(ColorPalette.warmBeige)
-        .edgesIgnoringSafeArea(.all)
     }
 }
 

@@ -12,7 +12,7 @@ import FirebaseFirestore
 
 struct CreateProfileView: View {
     @State private var profileImage: UIImage? = nil
-    @State private var childImages: [UIImage] = []
+    @State private var childImages: [UIImage?] = [nil] // Make this an array of optional UIImage
     @State private var childNames: [String] = [""]
     @State private var isImagePickerPresented = false
     @State private var isChildImagePickerPresented = false
@@ -35,7 +35,7 @@ struct CreateProfileView: View {
                             .overlay(Circle().stroke(Color.white, lineWidth: 4))
                             .shadow(radius: 10)
                     } else {
-                        Button("Upload Profile Image") {
+                        Button("Upload Profielfoto") {
                             isImagePickerPresented.toggle()
                         }
                         .padding()
@@ -48,13 +48,13 @@ struct CreateProfileView: View {
                 // Child Names and Photos
                 ForEach(0..<childNames.count, id: \.self) { index in
                     VStack {
-                        TextField("Child's Name", text: $childNames[index])
+                        TextField("Naam van kind", text: $childNames[index])
                             .padding()
                             .background(ColorPalette.almostWhite)
                             .cornerRadius(10)
                             .padding(.horizontal, 40)
                         
-                        Button("Upload Child Photo") {
+                        Button("Foto kind") {
                             isChildImagePickerPresented.toggle()
                         }
                         .padding()
@@ -62,7 +62,7 @@ struct CreateProfileView: View {
                         .foregroundColor(.white)
                         .cornerRadius(10)
                         
-                        if index < childImages.count, let childImage = childImages[index] {
+                        if let childImage = childImages[index] {
                             Image(uiImage: childImage)
                                 .resizable()
                                 .scaledToFit()
@@ -75,9 +75,9 @@ struct CreateProfileView: View {
                 }
                 
                 // Add Child Button
-                Button("Add Another Child") {
+                Button("Ik heb nog een kind") {
                     childNames.append("")
-                    childImages.append(UIImage())
+                    childImages.append(nil) // Add nil initially for new child photo
                 }
                 .padding()
                 .background(ColorPalette.rustyRed)
@@ -117,6 +117,7 @@ struct CreateProfileView: View {
                 ImagePicker(image: $profileImage)
             })
             .sheet(isPresented: $isChildImagePickerPresented, content: {
+                // Ensure the image binding is passed as optional for child images
                 ImagePicker(image: $childImages[childImages.count - 1])
             })
         }
@@ -129,7 +130,7 @@ struct CreateProfileView: View {
             return
         }
         
-        if childNames.contains(where: { $0.isEmpty }) || childImages.contains(where: { $0 == UIImage() }) {
+        if childNames.contains(where: { $0.isEmpty }) || childImages.contains(where: { $0 == nil }) {
             errorMessage = "Please provide names and photos for all children."
             return
         }
@@ -148,25 +149,32 @@ struct CreateProfileView: View {
             // Create Firebase User Profile Data
             var childrenData = [[String: Any]]()
             for i in 0..<childNames.count {
-                uploadImage(image: childImages[i]) { childImageUrl in
-                    if let childImageUrl = childImageUrl {
-                        let childData = [
-                            "name": childNames[i],
-                            "imageUrl": childImageUrl
-                        ]
-                        childrenData.append(childData)
-                    }
-                    
-                    // Once all images are uploaded, save the profile to Firestore
-                    if childrenData.count == childNames.count {
-                        saveProfile(profileImageUrl: profileImageUrl, childrenData: childrenData)
+                if let childImage = childImages[i] {
+                    uploadImage(image: childImage) { childImageUrl in
+                        if let childImageUrl = childImageUrl {
+                            let childData = [
+                                "name": childNames[i],
+                                "imageUrl": childImageUrl
+                            ]
+                            childrenData.append(childData)
+                        }
+                        
+                        // Once all images are uploaded, save the profile to Firestore
+                        if childrenData.count == childNames.count {
+                            saveProfile(profileImageUrl: profileImageUrl, childrenData: childrenData)
+                        }
                     }
                 }
             }
         }
     }
     
-    func uploadImage(image: UIImage, completion: @escaping (String?) -> Void) {
+    func uploadImage(image: UIImage?, completion: @escaping (String?) -> Void) {
+        guard let image = image else {
+            completion(nil)
+            return
+        }
+        
         let imageData = image.jpegData(compressionQuality: 0.75)
         let storageRef = Storage.storage().reference().child("profileImages/\(UUID().uuidString).jpg")
         
